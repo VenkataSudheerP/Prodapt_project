@@ -1,0 +1,4 @@
+[
+    {"flight_number": "AF101", "price": 50000, "duration": "8h"},
+    {"flight_number": "AF102", "price": 52000, "duration": "8h 15m"}
+]

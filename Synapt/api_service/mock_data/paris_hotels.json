@@ -1,0 +1,4 @@
+[
+    {"name": "Hotel Paris A", "price": 10000, "location": "Eiffel Tower"},
+    {"name": "Hotel Paris B", "price": 12000, "location": "Louvre"}
+]

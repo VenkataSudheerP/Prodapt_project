@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Multi-Agent Travel Planning System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #4F46E5;
+            --secondary: #10B981;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F3F4F6;
+            color: var(--dark);
+        }
+        
+        .agent-msg {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 2.5rem;
+        }
+        
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: #E5E7EB;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: 0.5rem;
+            top: 0.25rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 9999px;
+            border: 2px solid white;
+        }
+        
+        .itinerary-card {
+            transition: all 0.2s ease;
+        }
+        
+        .itinerary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header Section -->
+        <header class="mb-12 text-center">
+            <h1 class="text-4xl font-bold text-indigo-600 mb-3">Offline Travel Planner</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Multi-agent system for collaborative travel planning without cloud dependencies
+            </p>
+        </header>
+        
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Panel - Agent Communication -->
+            <div class="lg:col-span-1 bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Agent Communication</h2>
+                
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-medium">Planner Agent (LangGraph)</h3>
+                            <p class="text-sm text-gray-500">Central Orchestrator</p>
+                        </div>
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-medium">Active</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-medium">Budget Analyst (CrewAI)</h3>
+                            <p class="text-sm text-gray-500">Cost Validation</p>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Ready</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                            <h3 class="font-medium">Culture Expert (CrewAI)</h3>
+                            <p class="text-sm text-gray-500">Event Curation</p>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Ready</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-medium">Logistics Manager (CrewAI)</h3>
+                            <p class="text-sm text-gray-500">Transportation</p>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Ready</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-medium">API Agent (Google AI)</h3>
+                            <p class="text-sm text-gray-500">Data Enrichment</p>
+                        </div>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">Standby</span>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="font-medium text-gray-700 mb-2">Agent Status</h3>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="timeline-item mb-4">
+                            <div class="timeline-dot bg-indigo-500"></div>
+                            <div class="bg-indigo-50 p-3 rounded-lg">
+                                <p class="text-sm text-indigo-800">Planner Agent initialized local LLM (Mistral via Ollama)</p>
+                                <p class="text-xs text-indigo-600 mt-1">2 seconds ago</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item mb-4">
+                            <div class="timeline-dot bg-green-500"></div>
+                            <div class="bg-green-50 p-3 rounded-lg">
+                                <p class="text-sm text-green-800">CrewAI team loaded local models (Gemma/Mistral)</p>
+                                <p class="text-xs text-green-600 mt-1">4 seconds ago</p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-dot bg-blue-500"></div>
+                            <div class="bg-blue-50 p-3 rounded-lg">
+                                <p class="text-sm text-blue-800">Google Gemini API connected (free tier)</p>
+                                <p class="text-xs text-blue-600 mt-1">6 seconds ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-medium text-gray-700 mb-2">System Requirements</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <svg class="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Pure offline execution</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Zero paid API dependencies</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Local models via Ollama/HuggingFace</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Center Panel - Travel Planning -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Planning Form -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Plan Your Trip</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Destination</label>
+                            <input type="text" id="destination" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g. Bali, Indonesia">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Trip Duration</label>
+                            <select id="duration" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="3">3 days</option>
+                                <option value="5" selected>5 days</option>
+                                <option value="7">7 days</option>
+                                <option value="10">10 days</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Budget (₹)</label>
+                            <input type="number" id="budget" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" value="80000">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Travel Style</label>
+                            <select id="style" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="beach">Beach Vacation</option>
+                                <option value="culture">Cultural Experience</option>
+                                <option value="adventure">Adventure Travel</option>
+                                <option value="mixed" selected>Mixed (Beaches + Culture)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Additional Preferences</label>
+                        <textarea id="preferences" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Any special requirements or interests..."></textarea>
+                    </div>
+                    
+                    <button id="planBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center">
+                        <svg id="spinner" class="hidden animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span id="btnText">Generate Itinerary</span>
+                    </button>
+                </div>
+                
+                <!-- Agent Communication Visualization -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Agent Collaboration</h2>
+                    
+                    <div class="relative h-64 bg-gray-50 rounded-lg overflow-hidden mb-4">
+                        <img src="https://placehold.co/800x300" alt="Visualization of agent communication flow showing LangGraph planner coordinating with CrewAI specialists and Google AI for enrichment" class="w-full h-full object-cover" />
+                    </div>
+                    
+                    <div id="agentMessages" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        <!-- Agent messages will appear here -->
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div id="resultsSection" class="hidden">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-semibold text-gray-800">Your Travel Itinerary</h2>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-sm font-medium flex items-center">
+                                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    PDF
+                                </button>
+                                <button class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-sm font-medium flex items-center">
+                                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                    </svg>
+                                    .ICS
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="itinerarySummary" class="mb-6 p-4 bg-indigo-50 rounded-lg">
+                            <!-- Summary will be inserted here -->
+                        </div>
+                        
+                        <div id="itineraryDays" class="space-y-4">
+                            <!-- Day cards will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const planBtn = document.getElementById('planBtn');
+            const spinner = document.getElementById('spinner');
+            const btnText = document.getElementById('btnText');
+            const agentMessages = document.getElementById('agentMessages');
+            const resultsSection = document.getElementById('resultsSection');
+            const itinerarySummary = document.getElementById('itinerarySummary');
+            const itineraryDays = document.getElementById('itineraryDays');
+            
+            // Mock data for demonstration
+            const mockDestinations = {
+                'Bali': {
+                    flights: '₹28,000 - ₹35,000 round trip',
+                    hotels: ['Sanur Beach Resort (₹6,500/night)', 'Ubud Valley Retreat (₹5,200/night)'],
+                    activities: [
+                        'Tanah Lot Temple Sunset Tour',
+                        'Ubud Sacred Monkey Forest',
+                        'Balinese Cooking Class',
+                        'Snorkeling at Blue Lagoon'
+                    ]
+                },
+                'Kyoto': {
+                    flights: '₹42,000 - ₹48,000 round trip',
+                    hotels: ['Gion Machiya (₹8,000/night)', 'Kyoto Tower Hotel (₹6,500/night)'],
+                    activities: [
+                        'Fushimi Inari Shrine Visit',
+                        'Tea Ceremony Experience',
+                        'Arashiyama Bamboo Forest',
+                        'Nishiki Market Food Tour'
+                    ]
+                }
+            };
+            
+            planBtn.addEventListener('click', function() {
+                // Show loading state
+                spinner.classList.remove('hidden');
+                btnText.textContent = 'Agents collaborating...';
+                planBtn.disabled = true;
+                
+                // Clear previous results
+                agentMessages.innerHTML = '';
+                itineraryDays.innerHTML = '';
+                resultsSection.classList.add('hidden');
+                
+                // Get form values
+                const destination = document.getElementById('destination').value || 'Bali';
+                const duration = parseInt(document.getElementById('duration').value);
+                const budget = parseInt(document.getElementById('budget').value);
+                const style = document.getElementById('style').value;
+                const preferences = document.getElementById('preferences').value;
+                
+                // Simulate agent collaboration
+                simulateAgentWorkflow(destination, duration, budget, style, preferences);
+            });
+            
+            function simulateAgentWorkflow(destination, duration, budget, style, preferences) {
+                // Planner Agent starts
+                addAgentMessage('planner', 'Parsing user request and decomposing into subtasks...');
+                
+                setTimeout(() => {
+                    addAgentMessage('planner', `Task decomposition complete:
+- Flight booking (target ≤₹${Math.floor(budget*0.4)})
+- ${duration} nights accommodation
+- ${duration} days of ${style} activities`);
+                    
+                    // Budget Analyst works
+                    setTimeout(() => {
+                        addAgentMessage('budget', `Validating ₹${budget.toLocaleString('en-IN')} budget constraint...`);
+                        
+                        setTimeout(() => {
+                            addAgentMessage('budget', `Budget allocation approved with ₹${(budget-10000).toLocaleString('en-IN')} estimated total.`);
+                            
+                            // Culture Expert works
+                            setTimeout(() => {
+                                addAgentMessage('culture', `Curating ${style} activities for ${destination}...`);
+                                
+                                setTimeout(() => {
+                                    addAgentMessage('culture', `Found ${mockDestinations[destination] ? mockDestinations[destination].activities.length : 4} cultural activities matching preferences`);
+                                    
+                                    // Logistics Manager works
+                                    setTimeout(() => {
+                                        addAgentMessage('logistics', `Optimizing transportation and timing for itinerary...`);
+                                        
+                                        setTimeout(() => {
+                                            addAgentMessage('logistics', `Transportation plan complete with day-by-day route optimization`);
+                                            
+                                            // API Agent enhances
+                                            setTimeout(() => {
+                                                addAgentMessage('api', `Enhancing output with location descriptions and summaries...`);
+                                                
+                                                setTimeout(() => {
+                                                    addAgentMessage('api', `Added rich descriptions for all locations and activities`);
+                                                    
+                                                    // Planner compiles final itinerary
+                                                    setTimeout(() => {
+                                                        addAgentMessage('planner', `Compiling final itinerary with all agent contributions`);
+                                                        
+                                                        // Show results
+                                                        setTimeout(() => {
+                                                            generateItinerary(destination, duration, budget, style);
+                                                            spinner.classList.add('hidden');
+                                                            btnText.textContent = 'Generate Itinerary';
+                                                            planBtn.disabled = false;
+                                                        }, 1000);
+                                                    }, 1000);
+                                                }, 1000);
+                                            }, 1000);
+                                        }, 1000);
+                                    }, 1000);
+                                }, 1000);
+                            }, 1000);
+                        }, 1000);
+                    }, 1000);
+                }, 1500);
+            }
+            
+            function addAgentMessage(agent, message) {
+                const colors = {
+                    'planner': 'indigo',
+                    'budget': 'green',
+                    'culture': 'purple',
+                    'logistics': 'blue',
+                    'api': 'orange'
+                };
+                
+                const agentNames = {
+                    'planner': 'Planner Agent (LangGraph)',
+                    'budget': 'Budget Analyst (CrewAI)',
+                    'culture': 'Culture Expert (CrewAI)',
+                    'logistics': 'Logistics Manager (CrewAI)',
+                    'api': 'API Agent (Google AI)'
+                };
+                
+                const msgElement = document.createElement('div');
+                msgElement.className = `agent-msg p-3 rounded-lg bg-${colors[agent]}-50 border-l-4 border-${colors[agent]}-500`;
+                msgElement.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="font-medium text-${colors[agent]}-800">${agentNames[agent]}</span>
+                            <p class="text-sm text-gray-700">${message}</p>
+                        </div>
+                        <span class="text-xs text-gray-500">${new Date().toLocaleTimeString()}</span>
+                    </div>
+                `;
+                
+                agentMessages.appendChild(msgElement);
+                agentMessages.scrollTop = agentMessages.scrollHeight;
+            }
+            
+            function generateItinerary(destination, duration, budget, style) {
+                resultsSection.classList.remove('hidden');
+                
+                // Generate summary
+                itinerarySummary.innerHTML = `
+                    <h3 class="font-semibold text-indigo-800 mb-2">${duration}-day ${style} Trip to ${destination}</h3>
+                    <p class="text-sm text-gray-700">Total budget: ₹${budget.toLocaleString('en-IN')}</p>
+                    <p class="text-sm text-gray-700 mt-2">This itinerary was collaboratively created by AI agents specializing in budget planning, cultural activities, and logistics management.</p>
+                `;
+                
+                // Generate day-by-day itinerary
+                for (let day = 1; day <= duration; day++) {
+                    const dayCard = document.createElement('div');
+                    dayCard.className = 'itinerary-card bg-white border border-gray-200 rounded-lg overflow-hidden';
+                    dayCard.innerHTML = `
+                        <div class="bg-gray-800 px-4 py-2">
+                            <h3 class="font-semibold text-white">Day ${day}: ${getDayActivity(style)}</h3>
+                        </div>
+                        <div class="p-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-500">Morning</h4>
+                                    <p class="text-gray-800">${getMorningActivity(style, destination)}</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-500">Afternoon</h4>
+                                    <p class="text-gray-800">${getAfternoonActivity(style, destination)}</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-500">Evening</h4>
+                                    <p class="text-gray-800">${getEveningActivity(style, destination)}</p>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <div class="text-green-600 font-medium">Estimated Cost: ₹${Math.floor(3000 + Math.random() * 2000).toLocaleString('en-IN')}</div>
+                                <button class="text-indigo-600 hover:text-indigo-800 font-medium">View Details</button>
+                            </div>
+                        </div>
+                    `;
+                    itineraryDays.appendChild(dayCard);
+                }
+            }
+            
+            // Helper functions for generating mock itinerary content
+            function getDayActivity(style) {
+                const activities = {
+                    'beach': ['Beach Relaxation', 'Island Hopping', 'Water Sports Day'],
+                    'culture': ['Cultural Immersion', 'Historical Tour', 'Art Exploration'],
+                    'adventure': ['Mountain Trek', 'Water Adventure', 'Jungle Exploration'],
+                    'mixed': ['Beach & Culture Combo', 'Balanced Experience', 'Varied Activities']
+                };
+                return activities[style][Math.floor(Math.random() * activities[style].length)];
+            }
+            
+            function getMorningActivity(style, destination) {
+                if (destination === 'Bali') {
+                    if (style === 'beach') return 'Relax at Seminyak Beach';
+                    if (style === 'culture') return 'Visit Ulun Danu Beratan Temple';
+                    return 'Visit Ubud Market';
+                } else {
+                    if (style === 'culture') return 'Tour Fushimi Inari Shrine';
+                    return 'City walking tour';
+                }
+            }
+            
+            function getAfternoonActivity(style, destination) {
+                if (destination === 'Bali') {
+                    if (style === 'beach') return 'Snorkeling at Blue Lagoon';
+                    if (style === 'culture') return 'Balinese cooking class';
+                    return 'Visit Tegallalang Rice Terraces';
+                } else {
+                    if (style === 'culture') return 'Traditional tea ceremony';
+                    return 'Lunch at local restaurant';
+                }
+            }
+            
+            function getEveningActivity(style, destination) {
+                if (destination === 'Bali') {
+                    return 'Sunset dinner at Jimbaran Bay';
+                } else {
+                    return 'Dinner at Nishiki Market';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
